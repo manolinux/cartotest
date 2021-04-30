@@ -1,0 +1,12 @@
+fastapi
+fastapi-jwt-auth
+requests
+ijson
+uvicorn[standard]
+pydantic
+memoization
+osgeo
+streamlit
+pandas
+folium
+streamlit_folium
