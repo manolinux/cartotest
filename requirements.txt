@@ -5,7 +5,7 @@ ijson
 uvicorn[standard]
 pydantic
 memoization
-osgeo
+shapely
 streamlit
 pandas
 folium
