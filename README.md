@@ -80,6 +80,12 @@ BONUS: DEPLOY
 
 Deployment can be done in a Docker container, building it from scratch with the offered Dockerfile.
 Image exposes two ports, 8000 for API, and 8001 for Streamlit.
+ 
+ * Building :
+   docker build . -t cartotest
+
+ * Running
+   docker run  -d  -p 8000:8000 -p 8001:8001 cartotest
 
 BONUS: STREAMLIT
 
