@@ -178,12 +178,12 @@ def getMeasure(function: str,
                 variable: str,
                 fromDate: str, 
                 toDate: str, 
-                stations: Optional[str],
+                stations: Optional[str] = "",
                 geom: Optional[str] = None,
                 Authorize: AuthJWT = Depends()):
     
     #Authorization required
-    #Authorize.jwt_required()
+    Authorize.jwt_required()
     
     #Check params, if there is trouble validating params, exception will be raised
     measureRequest = MeasureRequest(function=function,variable=variable,
@@ -256,7 +256,7 @@ def getMeasureTimeseries(function: str, variable: str,
                 Authorize: AuthJWT = Depends()):
     
     #Authorization required
-    #Authorize.jwt_required()
+    Authorize.jwt_required()
 
     #If all params are ok, this does not raise an exception
     timeseriesRequest = TimeSeriesRequest(function = function,
