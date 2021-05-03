@@ -20,7 +20,7 @@ class Settings:
     geomIntersection = " where st_intersects(the_geom, ST_GeomFromGeoJSON({0})"
     notAvailablePopulation = -1
     intersectionFilter = '{"type":"Polygon","coordinates":[[[-3.63289587199688,40.56439731247202],[-3.661734983325005,40.55618117044514],[-3.66310827434063,40.53583209794804],[-3.6378740519285206,40.52421992151271],[-3.6148714274168015,40.5239589506112],[-3.60543005168438,40.547181381686634],[-3.63289587199688,40.56439731247202]]]}'
-    stationsFilter = []
+    stationsFilter = ['aq_jaen']
     
     #Endpoints
     baseUrl = "http://localhost:8000"
