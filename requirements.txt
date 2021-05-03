@@ -1,7 +1,7 @@
 fastapi
 fastapi-jwt-auth
 requests
-ijson
+geojson
 uvicorn[standard]
 pydantic
 memoization

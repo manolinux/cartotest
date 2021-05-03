@@ -78,6 +78,29 @@ Uvicorn (the web server in which FastAPI is executed) has easy support for HTTPS
 
 BONUS: DEPLOY
 
+a/Vanilla Deploy
+ * Build a virtualenv in downloaded folder
+   $ virtualenv .
+
+  * Activate environment:
+   $ source bin/activate   (bash)
+   $ . bin/activate (sh)
+
+ * Install requirements
+   $ pip3 install -r requirements.txt
+
+ * Run api inside uvicorn
+   $ uvicorn --reload --port 8000 main:app & disown
+ 
+ * Run streamlit 
+   $ streamlit run streamlit_app.py & disown
+
+  Disown is a BASH extension, so if not running bash, we could use nohup
+  $ nohup uvicorn --reload --port 8000 main:app &
+  $ nohup streamlit run streamlit_app.py &
+   
+
+b/Docker Deployment
 Deployment can be done in a Docker container, building it from scratch with the offered Dockerfile.
 Image exposes two ports, 8000 for API, and 8001 for Streamlit.
  

@@ -1,5 +1,5 @@
 #Configuration class, all values are static
-from models import AuthSettings
+
 
 class Settings:
 
@@ -30,9 +30,8 @@ class Settings:
     loginUrl = "{0}/login".format(baseUrl)
     logoutUrl = "{0}/logout".format(baseUrl)
     
-
-    #Auth config
-    authSettings = AuthSettings(
-        authjwt_secret_key = "secret",
-        authjwt_denylist_enabled  = True,
-        authjwt_denylist_token_checks = {"access"})
+    authSettings = {
+        "authjwt_secret_key" : "secret",
+        "authjwt_denylist_enabled"  : True,
+        "authjwt_denylist_token_checks" : {"access"}
+    }

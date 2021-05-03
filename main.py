@@ -1,7 +1,8 @@
+
 from models import *
 from settings import Settings
 from typing import Optional, List, Type, Any
-from fastapi import FastAPI, Depends, HTTPException, Request
+from fastapi import FastAPI, Depends, HTTPException, Request, Path, Query
 from fastapi.responses import JSONResponse
 from datetime import datetime 
 from memoization import cached
@@ -9,10 +10,8 @@ from shapely import wkb
 from shapely.geometry import mapping, shape
 from fastapi_jwt_auth import AuthJWT
 from fastapi_jwt_auth.exceptions import AuthJWTException
-
 import json
-import pydantic 
-import requests
+import requests 
 import logging
 
 
@@ -39,7 +38,7 @@ def getStations():
             return Stations(rows=list())
 
     except Exception as e:
-            return Stations(rows=list())
+        raise HTTPException(status_code=422,detail=str(e))
     
 
 """
@@ -56,13 +55,13 @@ Could by achieved too by using database, but we're use shapely for vector inters
 @cached
 def filterStations(stationIds: List[str] = list(), geom = None):
     
-    filteredStations = []
+    filteredStations = Stations(rows=[])
     allStations = getStations()
     
     #Filter by ids?
     if len(stationIds) > 0:
         for station_id in stationIds:
-            filteredStations = list(filter(lambda x: x.station_id == station_id ,allStations.rows))
+            filteredStations = Stations(rows=list(filter(lambda x: x.station_id == station_id ,allStations.rows)))
     else:
         filteredStations = allStations
     
@@ -111,7 +110,8 @@ Initialization
 """
 @AuthJWT.load_config
 def getAuthConfig():
-    return Settings.authSettings
+    return AuthSettings(**Settings.authSettings)
+    
 
 @AuthJWT.token_in_denylist_loader
 def checkIfTokenInDenyList(decrypted_token):
@@ -127,7 +127,9 @@ def startup():
     #First cached-load of stations, should be few
     #It could have a ttl, too
     #But now we're not worrying about refreshing stations
+    
     app.allStations = getStations()
+    
 
     #Cache population too
     for station in app.allStations.rows:
@@ -172,13 +174,23 @@ Example:
 /stations/measure/max/co/0200101/20210101?stations=sta1,sta2&geom=POINT(1 2)
 """
 @app.get("/stations/measure/{function}/{variable}/{fromDate}/{toDate}")
-def getMeasure(function: str, variable: str,
-                fromDate: str, toDate: str, 
-                stations: Optional[List[str]] = list(),
+def getMeasure(function: str, 
+                variable: str,
+                fromDate: str, 
+                toDate: str, 
+                stations: Optional[str],
                 geom: Optional[str] = None,
                 Authorize: AuthJWT = Depends()):
     
-    Authorize.jwt_required()
+    #Authorization required
+    #Authorize.jwt_required()
+    
+    #Check params, if there is trouble validating params, exception will be raised
+    measureRequest = MeasureRequest(function=function,variable=variable,
+        fromDate = fromDate, toDate = toDate, stations = stations, geom = geom)
+
+    #Convert comma-separated values into python list
+    stations = stations.split(",") if stations else []
     
     #Get stations, and set population
     stationsList = getStations()
@@ -228,22 +240,32 @@ def getMeasure(function: str, variable: str,
                 return ResultsMeasureEp(rows=list())
 
         except Exception as e:
-            return ResultsMeasureEp(rows=list())
+             raise HTTPException(status_code=422,detail=str(e))
+
 
 
 """
 Example:
-/stations/timeseries/max/co/hour/0200101/20210101?stations=sta1,sta2&geom=POINT(1 2)
+/stations/timeseries/max/co/hour/2015101/20210101?stations=sta1,sta2&geom=POINT(1 2)
 """
 @app.get("/stations/timeseries/{function}/{variable}/{tsStep}/{fromDate}/{toDate}")
 def getMeasureTimeseries(function: str, variable: str,
                 tsStep: str, fromDate: str, toDate: str, 
-                stations: Optional[List[str]] = list(),
+                stations: Optional[str] = "",
                 geom: Optional[str] = None,
                 Authorize: AuthJWT = Depends()):
     
-    Authorize.jwt_required()
+    #Authorization required
+    #Authorize.jwt_required()
 
+    #If all params are ok, this does not raise an exception
+    timeseriesRequest = TimeSeriesRequest(function = function,
+        variable = variable, tsStep = tsStep, fromDate = fromDate,
+        toDate = toDate, stations = stations, geom = geom)
+
+    #Convert comma-separated values into python list
+    stations = stations.split(",") if stations else []
+    
     #Get stations, and set population
     stationsList = getStations()
     setStationsPopulation(stationsList)
@@ -292,7 +314,7 @@ def getMeasureTimeseries(function: str, variable: str,
                 return ResultsTimeSeriesEp(rows=list())
 
         except Exception as e:
-            return ResultsTimeSeriesEp(rows=list())
+            raise HTTPException(status_code=422,detail=str(e))
 
 """
     Bonus: stations to print in a map
